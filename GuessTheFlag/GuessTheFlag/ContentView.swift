@@ -13,7 +13,11 @@ struct ContentView: View {
     
     @State var correctAnswer = Int.random(in: 0...2)
     @State private var showingScore = false
+    @State private var reset = false
     @State private var scoreTitle = ""
+    @State private var score = 0
+    @State private var questionsAsked = 1
+    private let numberOfQuestions = 8
     
     var body: some View {
         ZStack {
@@ -56,7 +60,10 @@ struct ContentView: View {
                 Spacer()
                 Spacer()
 
-                Text("Score: ???")
+                Text("Score: \(score)")
+                    .font(.largeTitle.bold())
+                    .foregroundStyle(.white)
+                Text("Question: \(questionsAsked)/\(numberOfQuestions)")
                     .font(.largeTitle.bold())
                     .foregroundStyle(.white)
 
@@ -64,18 +71,26 @@ struct ContentView: View {
             }
             .padding()
         }
+        .alert("Final Score: \(score)", isPresented: $reset) {
+            Button("Reset", action: resetGame)
+        } message: {
+            Text("Your final score is \(score)")
+        }
         .alert(scoreTitle, isPresented: $showingScore) {
             Button("Continue", action: askQuestion)
         } message: {
-            Text("Your score is ???")
+            Text("Your score is \(score)")
         }
     }
 
     func flagTapped(_ number: Int) {
         if number == correctAnswer {
             scoreTitle = "Correct"
+            score += 10
         } else {
-            scoreTitle = "Wrong"
+            let wrongFlag = countries[number]
+            scoreTitle = "Wrong!, That's the flag of \(wrongFlag)"
+            score -= 5
         }
         showingScore = true
     }
@@ -83,6 +98,17 @@ struct ContentView: View {
     func askQuestion() {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+        questionsAsked += 1
+        if questionsAsked == numberOfQuestions + 1 {
+            reset = true
+        }
+    }
+    
+    func resetGame() {
+        questionsAsked = 1
+        reset = true
+        score = 0
+        askQuestion()
     }
 }
 

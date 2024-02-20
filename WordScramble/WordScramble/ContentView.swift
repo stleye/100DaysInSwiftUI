@@ -18,6 +18,7 @@ struct ContentView: View {
     
     var body: some View {
         NavigationStack {
+            Text("Word score: \(calculateScore(word: rootWord))")
             List {
                 Section {
                     TextField("Enter your word", text: $newWord)
@@ -33,6 +34,9 @@ struct ContentView: View {
                 }
             }
             .navigationTitle(rootWord)
+            .toolbar {
+                Button("New word", action: startGame)
+            }
             .onSubmit(addNewWord)
             .onAppear(perform: startGame)
             .alert(errorTitle, isPresented: $showingError) {
@@ -45,7 +49,7 @@ struct ContentView: View {
     
     func addNewWord() {
         let answer = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        guard answer.count > 0 else { return }
+        guard answer.count > 3 && answer != rootWord else { return }
         
         guard isOriginal(word: answer) else {
             wordError(title: "Word used already", message: "Be more original")
@@ -107,6 +111,23 @@ struct ContentView: View {
         errorMessage = message
         showingError = true
     }
+    
+    func calculateScore(word: String) -> Int {
+        var wordScore = 0
+        let complexityScore = word.count
+        let rarityScore = word.reduce(0) { $0 + (letterScores[$1] ?? 1) }
+        wordScore = complexityScore * rarityScore
+        return wordScore
+    }
+
+    let letterScores: [Character: Int] = [
+        "a": 1, "b": 2, "c": 3, "d": 4, "e": 5,
+        "f": 4, "g": 3, "h": 2, "i": 1, "j": 2,
+        "k": 3, "l": 4, "m": 5, "n": 4, "o": 3,
+        "p": 2, "q": 3, "r": 4, "s": 5, "t": 4,
+        "u": 3, "v": 2, "w": 3, "x": 4, "y": 5,
+        "z": 5
+    ]
 
 }
 
